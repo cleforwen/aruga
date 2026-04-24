@@ -1,0 +1,26 @@
+quarkus:
+  datasource:
+    db-kind: postgresql
+    jdbc:
+      url: jdbc:postgresql://localhost:5432/aruga
+    reactive:
+      url: postgresql://localhost:5432/aruga
+    username: aruga
+    password: aruga
+  hibernate-orm:
+    database:
+      generation: none
+  liquibase:
+    migrate-at-start: true
+    change-log: db/migration/db.changelog-master.xml
+mp:
+  jwt:
+    verify:
+      publickey:
+        location: publicKey.pem
+      issuer: https://aruga.ehms.com
+smallrye:
+  jwt:
+    sign:
+      key:
+        location: privateKey.pem
