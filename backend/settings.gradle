@@ -4,4 +4,4 @@ pluginManagement {
         gradlePluginPortal()
     }
 }
-rootProject.name = 'ehms-backend'
+rootProject.name = 'aruga-app-backend'
