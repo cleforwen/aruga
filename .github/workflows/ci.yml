@@ -20,7 +20,7 @@ jobs:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         
     - name: Build with Gradle (Native)
-      run: cd backend && gradle build -Dquarkus.package.type=native
+      run: cd backend && ./gradlew build -Dquarkus.package.type=native
       
     - name: Build Docker Image
       run: |
