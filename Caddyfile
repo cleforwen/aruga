@@ -1,0 +1,14 @@
+:80 {
+    # Serve frontend static files
+    root * /usr/share/caddy
+    encode gzip
+    
+    # Enable HTML5 history mode routing (for SolidJS)
+    try_files {path} /index.html
+    file_server
+
+    # Reverse proxy API requests to the backend container
+    handle_path /api/* {
+        reverse_proxy backend:8080
+    }
+}

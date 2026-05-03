@@ -1,20 +1,24 @@
 services:
-  postgres:
-    image: postgres:16-alpine
-    container_name: aruga-postgres
-    ports:
-      - "5432:5432"
+  backend:
+    build:
+      context: ./backend
+    container_name: aruga-backend
+    restart: unless-stopped
     environment:
-      POSTGRES_USER: aruga
-      POSTGRES_PASSWORD: aruga
-      POSTGRES_DB: aruga
-    volumes:
-      - aruga_pg_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U aruga"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
+      QUARKUS_DATASOURCE_JDBC_URL: ${DB_JDBC_URL:-jdbc:postgresql://10.0.0.216:5432/aruga}
+      QUARKUS_DATASOURCE_REACTIVE_URL: ${DB_REACTIVE_URL:-postgresql://10.0.0.216:5432/aruga}
+      QUARKUS_DATASOURCE_USERNAME: ${DB_USER:-aruga}
+      QUARKUS_DATASOURCE_PASSWORD: ${DB_PASSWORD:-aruga}
 
-volumes:
-  aruga_pg_data:
+  caddy:
+    image: caddy:2-alpine
+    container_name: aruga-caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - ./frontend/dist:/usr/share/caddy
+    depends_on:
+      - backend
