@@ -1,12 +1,16 @@
 name: Deploy to Oracle Cloud
 
 on:
-  push:
+  workflow_run:
+    workflows: ["CI/CD Pipeline"]
+    types:
+      - completed
     branches: [ "main" ]
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -24,7 +28,7 @@ jobs:
 
       - name: Package application
         run: |
-          tar -czvf aruga-app.tar.gz --exclude='.git' --exclude='frontend/node_modules' --exclude='backend/.gradle' --exclude='backend/build' .
+          tar -czvf aruga-app.tar.gz --exclude='aruga-app.tar.gz' --exclude='.git' --exclude='frontend/node_modules' --exclude='backend/.gradle' --exclude='backend/build' .
 
       - name: Copy archive to server
         uses: appleboy/scp-action@v0.1.7
