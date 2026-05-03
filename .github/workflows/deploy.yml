@@ -12,33 +12,6 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      - name: Build Frontend
-        run: |
-          cd frontend
-          npm install
-          npm run build
-
-      - name: Package application
-        run: |
-          tar -czvf aruga-app.tar.gz --exclude='aruga-app.tar.gz' --exclude='.git' --exclude='frontend/node_modules' --exclude='backend/.gradle' --exclude='backend/build' .
-
-      - name: Copy archive to server
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.APP_SERVER_HOST }}
-          username: ${{ secrets.SSH_USERNAME }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "aruga-app.tar.gz"
-          target: "~/"
-
       - name: Deploy on App Server
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -46,15 +19,29 @@ jobs:
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            mkdir -p ~/aruga-app
-            tar -xzvf ~/aruga-app.tar.gz -C ~/aruga-app
-            rm ~/aruga-app.tar.gz
+            # Clone the repository if it doesn't exist
+            if [ ! -d "~/aruga-app/.git" ]; then
+              echo "Cloning repository..."
+              git clone https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git ~/aruga-app
+            fi
+            
             cd ~/aruga-app
             
+            # Pull the latest changes
+            echo "Pulling latest code..."
+            git pull origin main
+            
+            # Build Frontend (Note: This requires Node.js installed on your Oracle Cloud server)
+            echo "Building frontend..."
+            npm --prefix frontend install
+            npm --prefix frontend run build
+            
             # Setup database connection
+            echo "Configuring environment..."
             echo "DB_JDBC_URL=jdbc:postgresql://${{ secrets.DB_SERVER_HOST }}:5432/aruga" > .env
             echo "DB_REACTIVE_URL=postgresql://${{ secrets.DB_SERVER_HOST }}:5432/aruga" >> .env
             
-            # Redeploy Docker containers
+            # Redeploy Docker containers (This automatically BUILDS the Backend using the Dockerfile)
+            echo "Building backend and deploying containers..."
             docker compose down
             docker compose up -d --build
