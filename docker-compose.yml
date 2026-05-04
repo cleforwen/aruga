@@ -11,14 +11,13 @@ services:
       QUARKUS_DATASOURCE_PASSWORD: ${DB_PASSWORD:-aruga}
 
   caddy:
-    image: caddy:2-alpine
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
     container_name: aruga-caddy
     restart: unless-stopped
     ports:
       - "80:80"
       - "443:443"
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile
-      - ./frontend/dist:/usr/share/caddy
     depends_on:
       - backend

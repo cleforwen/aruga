@@ -31,11 +31,6 @@ jobs:
             echo "Pulling latest code..."
             git pull origin main
             
-            # Build Frontend (Note: This requires Node.js installed on your Oracle Cloud server)
-            echo "Building frontend..."
-            npm --prefix frontend install
-            npm --prefix frontend run build
-            
             # Setup database connection
             echo "Configuring environment..."
             echo "DB_JDBC_URL=jdbc:postgresql://${{ secrets.DB_SERVER_HOST }}:5432/aruga" > .env
