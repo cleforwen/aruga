@@ -18,6 +18,7 @@ jobs:
           host: ${{ secrets.APP_SERVER_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
+          command_timeout: 30m
           script: |
             # Clone the repository if it doesn't exist
             if [ ! -d "~/aruga-app/.git" ]; then
